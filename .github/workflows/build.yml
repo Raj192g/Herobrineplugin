@@ -1,0 +1,36 @@
+name: Build Herobrine Paper plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+
+      - name: Extract plugin source ZIP
+        run: |
+          mkdir source
+          unzip -q HerobrinePaperPlugin-build-ready-source.zip -d source
+
+      - name: Build plugin
+        working-directory: source/HerobrinePaperPlugin
+        run: mvn --batch-mode clean package
+
+      - name: Upload plugin JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: HerobrinePaper-plugin
+          path: source/HerobrinePaperPlugin/target/*.jar
+          if-no-files-found: error
