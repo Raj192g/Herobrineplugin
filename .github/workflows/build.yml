@@ -1,3 +1,4 @@
+
 name: Build Herobrine Paper plugin
 
 on:
@@ -9,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -19,15 +21,31 @@ jobs:
           distribution: temurin
           java-version: '8'
 
-      - name: Extract plugin source
-        run: unzip -q HerobrinePaperPlugin-build-ready-source.zip
+      - name: Find and extract plugin source
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -type f -name '*.zip' | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "ERROR: No source ZIP found in repository root."
+            ls -la
+            exit 1
+          fi
+          echo "Extracting: $ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d extracted
+          PROJECT_DIR=$(find extracted -name pom.xml -printf '%h\n' | head -n 1)
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: pom.xml not found in ZIP."
+            find extracted -maxdepth 4 -type f
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build plugin
-        run: cd HerobrinePaperPlugin && mvn --batch-mode clean package
+        run: mvn --batch-mode -f "$PROJECT_DIR/pom.xml" clean package
 
       - name: Upload plugin JAR
         uses: actions/upload-artifact@v5
         with:
           name: HerobrinePaper-plugin
-          path: HerobrinePaperPlugin/target/*.jar
+          path: extracted/**/target/*.jar
           if-no-files-found: error
+          
