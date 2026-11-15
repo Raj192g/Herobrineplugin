@@ -16,8 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '8'
-          cache: maven
+          java-version: '8
 
       - name: Extract plugin source ZIP
         run: |
