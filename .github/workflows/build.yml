@@ -3,7 +3,8 @@ name: Build Herobrine Paper plugin
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -16,20 +17,17 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '8
+          java-version: '8'
 
-      - name: Extract plugin source ZIP
-        run: |
-          mkdir source
-          unzip -q HerobrinePaperPlugin-build-ready-source.zip -d source
+      - name: Extract plugin source
+        run: unzip -q HerobrinePaperPlugin-build-ready-source.zip
 
       - name: Build plugin
-        working-directory: source/HerobrinePaperPlugin
-        run: mvn --batch-mode clean package
+        run: cd HerobrinePaperPlugin && mvn --batch-mode clean package
 
       - name: Upload plugin JAR
         uses: actions/upload-artifact@v4
         with:
           name: HerobrinePaper-plugin
-          path: source/HerobrinePaperPlugin/target/*.jar
+          path: HerobrinePaperPlugin/target/*.jar
           if-no-files-found: error
